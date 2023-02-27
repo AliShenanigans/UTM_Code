@@ -185,7 +185,8 @@ while c<n:
     Wlen, Wdel = RandomWeights()
     
     #run fairnessCheck on individual
-    delaycost, distancecost = fairnessCheck(Did,Dit,mins,Lid,Lit,meters)
+    delaycost, distancecost = fairnessCheck(Did,Dit,mins,Lid,Lit,meters)    
+    
     #collate result
     delayCosts.append(delaycost)
     distanceCosts.append(distancecost)
@@ -206,21 +207,36 @@ while c<n:
     
 #normalise combined cost  
 normalised = normalisedCost(totalCosts)    
-    
+normalised_delaycost = normalisedCost(delayCosts)
+normalised_distancecost = normalisedCost(distanceCosts)  
     
 E_delay = globalFairness(delayCosts)
 print('Global fairness is rated ',round(E_delay,3))
 print('(0 is unfair, 1 is fair)')
 
+'''
 subplots(1,2)    
 subplot(1,2,1)
 scatter(delayTimes,delayCosts)
 xlabel('Mins delayed')
-ylabel('Unweighted cost')
+ylabel('unweighted cost')
 subplot(1,2,2)
 scatter(extraDistances,distanceCosts)
 xlabel('Extra meters')
-ylabel('Unweighted cost')
+ylabel('unweighted cost')
+'''
+
+subplots(1,2)    
+subplot(1,2,1)
+scatter(delayTimes,normalised_delaycost)
+xlabel('Mins delayed')
+ylabel('Unweighted normalised cost')
+subplot(1,2,2)
+scatter(extraDistances,normalised_distancecost, color='green')
+xlabel('Extra meters')
+#ylabel('Unweighted normalised cost')
+
+
 
 fig,ax = subplots()
 ax.scatter(delayTimes,normalised, color="pink", 
