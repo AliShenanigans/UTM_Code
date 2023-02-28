@@ -443,16 +443,17 @@ ax2.legend(lines + lines2, labels + labels2, loc=0)
 
 #-----------------------------------------------------
 #Visualise penalty functions with bulk data!
+
 #this makes plots for what the penalty functions look like
 # 1. STEP FUNCTION ALONE
 fig, axs = subplots(2, 1)
-
-axs[0].scatter(delay,delayPenaltyStep, color='red')
+suptitle('Not Normalised Step Penalty Functions')
+axs[0].scatter(delay,delayPenaltyStep, color='lime')
 axs[0].set_title('Delay Step Penalty')
 axs[0].set_xlabel('Ground delay in minutes')
 axs[0].set_ylabel('Penalty to operator')
 
-axs[1].scatter(addedLength,reRoutePenaltyStep, color='red') 
+axs[1].scatter(addedLength,reRoutePenaltyStep, color='forestgreen') 
 axs[1].set_title('Extra Route Length Penalty')   
 axs[1].set_xlabel('Additional length in meters')
 axs[1].set_ylabel('Penalty to operator')
@@ -460,22 +461,22 @@ axs[1].set_ylabel('Penalty to operator')
 #----------------------
 # 2. VIEW BOTH TOTAL NORMALISED FUNCTIONS 
 fig, axs = subplots(2, 2)
-suptitle('Normalised Penalty Functions')
-axs[0,0].scatter(delay,totalPenaltyPythag_n,  color='blue')
+suptitle('Normalised Step vs Pythag. Penalty Functions')
+axs[0,0].scatter(delay,totalPenaltyPythag_n,  color='gold')
 axs[0,0].set_xlabel('Ground delay in minutes')
 axs[0,0].set_ylabel('Penalty to operator')
 
-axs[1,0].scatter(addedLength,totalPenaltyPythag_n,  color='blue')
+axs[1,0].scatter(addedLength,totalPenaltyPythag_n,  color='wheat')
 axs[1,0].set_xlabel('Additional length in meters')
 axs[1,0].set_ylabel('Penalty to operator')
 
 
-axs[0,1].scatter(delay,totalPenaltyStep_n, color='red')
+axs[0,1].scatter(delay,totalPenaltyStep_n, color='lightcoral')
 axs[0,1].set_ylabel('Ground delay in minutes')
 axs[0,1].set_xlabel('Penalty to operator')
 
 
-axs[1,1].scatter(addedLength,totalPenaltyStep_n, color='red')
+axs[1,1].scatter(addedLength,totalPenaltyStep_n, color='rosybrown')
 axs[1,1].set_xlabel('Additional length in meters')
 axs[1,1].set_ylabel('Penalty to operator')
 #-----------------------------------------------------------------------------
