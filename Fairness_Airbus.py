@@ -39,7 +39,7 @@ from math import *
 from numpy import *
 from matplotlib.pyplot import *
 import random
-
+import csv
 
 '--- Input Variables ---'     #note some of these will be hard coded
 Lua = 5000                    #maximum route length UA is capable of in m
@@ -256,37 +256,54 @@ def linearRegression(x,y):
 c=0
 delayTimes=[]            # mins
 extraDistances=[]        # meters
-delayPenaltySteps=[]     # incured Penalty from delay
-distancePenaltys=[]      # incurred Penalty from reroute
-totalPenaltys=[]         # linear combination of delay
-                         # and reroute Penalty using user defined weights
+delayPenaltySteps=[]     # incured Penalty from delay (step function method)
+distancePenaltys=[]      # incurred Penalty from reroute (step function method)
+totalPenaltys_step=[]    # linear combination of delay (step function method)
+                         # and reroute Penalty using user defined weights 
+totalPenaltys_pythag=[]  # total penalty when using pythag method
+totalPenaltys_pythagN=[] # total normalised penalty socred when using pythag method
 Wlens = []               # assigned weights for length 
 Wdels = []               # assigned weights for delay 
 C=[]
 
 while c<n:
     c+=1
-    #generate values for weights 
+    #generate values 
+    #-------------------------
     #weight
     Wlen, Wdel = RandomWeights()
     Wlens.append(Wlen)
     Wdels.append(Wdel)
+    
     #generate values for delay time 
     #delay mins
     mins =randomDelay()
     delayTimes.append(mins)
+    
     #generate values for extra journey distance
     #extra journey length
     meters = randomLength()
-    extraDistances.append(meters)   
+    extraDistances.append(meters) 
+    #-------------------------
+    
     #run fairnessCheck on individual
+    #step penalty function
     delayPenaltyStep, distancePenalty = fairnessCheck(Did,Dit,mins,Lid,Lit,meters)    
+    #pythag penalty function
+    penaltyPythag = pythagPenaltyFunction(Wlen,Wdel,mins,meters)
+    totalPenaltys_pythag.append(penaltyPythag)
+    'normalised'
+    penaltys_pythagN=relativePenalty(Wlen,Wdel,mins, 3*60,meters, 0.4*Lua)
+    totalPenaltys_pythagN.append(penaltys_pythagN)
+    
     #collate result
     delayPenaltySteps.append(delayPenaltyStep)
     distancePenaltys.append(distancePenalty)
+    
     #calculate combined penalty based on user preference
     total=TotalPenalty(Wlen,Wdel,delayPenaltyStep,distancePenalty) 
-    totalPenaltys.append(round(total,3))
+    totalPenaltys_step.append(round(total,3))
+    
     #id of operator in list
     C.append(c)
     '''
@@ -297,20 +314,33 @@ while c<n:
     '''
     #--END LOOP---
     
-#normalise combined penalty  
-normalised = normalisedPenalty(totalPenaltys)    
+#CALCULATE GLOBAL METRICS
+
+#---------------- Equity ----------------#    
+#normalise combined penalty(for step function linear combination method)
+normalisedTotalStepPenalty = normalisedPenalty(totalPenaltys_step)    
 normalised_delayPenaltyStep = normalisedPenalty(delayPenaltySteps)
 normalised_distancePenaltyStep = normalisedPenalty(distancePenaltys)  
-    
-E, geo_mean, ari_mean = globalEquity(totalPenaltys) #Airbus uses un-normalised scored here...
+#---step function penalty function---    
+E_step, geo_mean, ari_mean = globalEquity(totalPenaltys_step) #Unnormalised equity score with step function
 #normalised scored give a different value... 
-EN, geo_meanN, ari_meanN = globalEquity(normalised)
+EN_step, geo_meanN, ari_meanN = globalEquity(normalisedTotalStepPenalty)
 EN_delay, geo_meanN_d, ari_meanN_d = globalEquity(normalised_delayPenaltyStep)
 EN_distance, geo_meanN_l, ari_meanN_l = globalEquity(normalised_distancePenaltyStep)  
-#fairness stats  
-print('Global Equity is rated ',round(E,3))
+
+#---pythag. function penalty function---
+E_pythag, geometric_mean_pythag, arithmetic_mean_pythag = globalEquity(totalPenaltys_pythag)
+E_pythagN, geometric_mean_pythagN, arithmetic_mean_pythagN = globalEquity(totalPenaltys_pythagN)
+
+#---------------- Satisfaction ----------------#    
+
+
+
+#---------------- Fairness ----------------#    
+
+print('Global Equity is rated ',round(E_step,3))
 #equal distribution of inconvenience/ Penalty
-#print('Global normalised fairness is rated ',round(EN,3)) #This is less good for some reason I think...
+#print('Global normalised equity is rated ',round(EN_step,3)) #This is less good for some reason I think...
 print('(0 is unequal distribution of the global penalty, 1 is equal distribution of the global penalty)')
 print(' ')
 #delay stats 
@@ -323,7 +353,29 @@ print('Total global addittional distance travelled is', sum(extraDistances), 'm 
 print('Average additional global re-route length incurred is', mean(extraDistances),'m')
 print('The standard deviation in additional route length ', round(std(extraDistances),3), 'm')
 
+#------------------------------------------------
+#WRITE TO CSV  
 
+header = ['Equity (step)', 'Equity (pythag.)', 'Satisfaction (step)', 
+          'Satisfaction (pythag.)','Fairness (step)', 
+          'Fairness (pythag.)', 'Total Global Delay (mins)',
+          'Average Total Delay','Standard Deviation in Delay Incurred',
+          'Total global additional route length', 
+          'Total average additional route length', 
+          'Standard deviation in additional route length' ]
+#12 headers
+data = [round(E_step,3), round(E_pythag,3), 'Satisfaction (step)', 
+        'Satisfaction (pythag.)','Fairness (step)','Fairness (pythag.)',
+        sum(delayTimes),mean(delayTimes),round(std(delayTimes),3),
+        sum(extraDistances), mean(extraDistances),round(std(extraDistances))]
+with open('data.csv', 'w', encoding='UTF8') as f:
+    writer = csv.writer(f)
+    # write the header
+    writer.writerow(header)
+    # write the data
+    writer.writerow(data)
+
+#NEED TO PUT THE ABOVE IN A LOOP TO GET BULK DATA
 
 #-----------------------------------------------------------------------------
 #----- from here is just graphs ----------
