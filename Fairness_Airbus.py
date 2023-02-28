@@ -179,11 +179,7 @@ def linearRegression(x,y):
     model.fit(x, y)
     model = LinearRegression().fit(x, y)
     r_sq = model.score(x, y)
-    y_pred = model.predict(x)
-    print(f"coefficient of determination: {r_sq}")
-    print(f"intercept: {model.intercept_}")
-    print(f"slope: {model.coef_}")
-    
+    y_pred = model.predict(x)    
     return y_pred, round(r_sq,3)
     
 #--- Run Sims Here ---#
@@ -258,12 +254,14 @@ ylabel('unweighted cost')
 '''
 
 #---------- Look at cost function shape ----------#
+#delay time
 subplots(1,2)    
 suptitle('Unweighted Normalised Cost Functions')
 subplot(1,2,1)
 scatter(delayTimes,normalised_delaycost, color='green')
 xlabel('Mins delayed')
 #ylabel('Unweighted normalised cost')
+#extra distance travelled from re-routing
 subplot(1,2,2)
 scatter(extraDistances,normalised_distancecost, color='green')
 xlabel('Extra meters')
@@ -271,6 +269,11 @@ xlabel('Extra meters')
 
 #---------- Look at distribution of delay and additional distance ----------#
 #+ linear regression
+'''
+    im putting this here because i expect delay time and extra distance
+    travelled will get worse with more users ni teh airspace
+'''
+#delay time vs user id
 subplots(1,2)    
 suptitle('Incurred Delay and Additional Distance')
 delayTime_R,r_time = linearRegression(C,delayTimes)
@@ -281,6 +284,7 @@ legend( loc='upper left')
 xlabel('User ID #')
 ylabel('delay time (mins)')
 
+#extra distance travelled vs user id
 subplot(1,2,2)
 delayDistance_R,r_distance = linearRegression(C,extraDistances)
 scatter(C,extraDistances, color='cyan', label='Extra Distance')
@@ -289,9 +293,9 @@ legend( loc='upper left')
 xlabel('User ID #')
 ylabel('additional travel (m)')
 
-
 #---------- Look at normalised costs of delay and extra travel ----------#
 # + geometric and arithmetic mean of total cost function
+#normalised delay time and total means (geo and ari)
 fig,ax = subplots()
 ax.scatter(delayTimes,normalised, color="pink", 
         marker="o")
@@ -299,7 +303,7 @@ ax.set_xlabel('Mins delayed (min)')
 ax.plot(delayTimes, [geo_meanN]*len(delayTimes), color='orange', marker='*')
 ax.plot(delayTimes, [ari_meanN]*len(delayTimes), color='yellow', marker='.')
 
-
+#normalised extra distance travelled and total means (geo and ari)
 ax2=ax.twiny()
 ax2.scatter(extraDistances,normalised, color="red", 
         marker="o")
