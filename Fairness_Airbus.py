@@ -235,11 +235,12 @@ E, geo_mean, ari_mean = globalFairness(totalCosts) #Airbus uses un-normalised sc
 #normalised scored give a different value... 
 EN, geo_meanN, ari_meanN = globalFairness(normalised)     
 print('Global fairness is rated ',round(E,3))
-print('Global normalised fairness is rated ',round(EN,3))
+#print('Global normalised fairness is rated ',round(EN,3)) #This is less good for some reason I think...
 print('(0 is unfair, 1 is fair)')
 print('Total global delay incurred is', sum(delayTimes),' mins / ', round(sum(delayTimes)/60,3), 'hours')
+print('Average global ground delay incurred is', mean(delayTimes),'mins')
 print('Total global addittional distance travelled is', sum(extraDistances), 'm / ', sum(extraDistances)/1000, 'km')
-
+print('Average additional global re-route length incurred is', mean(extraDistances),'m')
 
 '''
 subplots(1,2)    
