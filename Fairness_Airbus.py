@@ -17,8 +17,15 @@ time or additional journey length. (higher means it impacts more in a negative w
 
 I think the threshold values should be central and or based on user type....
 
-The variables below will have a big impact on the outcome of the simulation
-so we need to study what may be best placed there
+The threshold values will have a big impact on the outcome of the simulation
+so we need to study what may be best placed there. These are hard coded.
+
+The sim needs to ingest the following variables: 
+-length of desired flight plan flight plan in m
+-Delay mins for allocated take off (mins)
+-Additional length of allocated route (m)   
+-User weight for delay
+-User weight for additional route 
 
 I also like to think of 'cost' as an inconvenience score more than actual cost...
 because that way its easier to factor in fairness tokens etc etc
@@ -28,7 +35,9 @@ from math import *
 from numpy import *
 from matplotlib.pyplot import *
 import random
-'--- Input Variables ---'
+
+
+'--- Input Variables ---'     #note some of these will be hard coded
 Lua = 5000                    #maximum route length UA is capable of in m
 Lr = 1000                     #length of desired flight plan in m
 juice=Lua-Lr                  #remaining juice
@@ -75,7 +84,7 @@ def globalFairness(P):
     geometric_mean = (multiply)**(1/n)
     arithmetic_mean=add/n
     E = geometric_mean / arithmetic_mean
-    return E
+    return E, geometric_mean, arithmetic_mean
 '''       
 #below is only used to visualise the piecewise cost function shape
 delayCosts=[]
@@ -159,8 +168,24 @@ def normalisedCost(totalCosts):
         z=(i-minc)/(maxc-minc)
         n_list.append(round(z,3))
     return n_list
-    
 
+
+def linearRegression(x,y):
+    from sklearn.linear_model import LinearRegression
+    #1d for now, would be good to make 2d
+    x = array(x).reshape((-1, 1))
+    y=array(y)
+    model = LinearRegression()
+    model.fit(x, y)
+    model = LinearRegression().fit(x, y)
+    r_sq = model.score(x, y)
+    y_pred = model.predict(x)
+    print(f"coefficient of determination: {r_sq}")
+    print(f"intercept: {model.intercept_}")
+    print(f"slope: {model.coef_}")
+    
+    return y_pred, round(r_sq,3)
+    
 #--- Run Sims Here ---#
 c=0
 delayTimes=[]           #mins
@@ -210,9 +235,15 @@ normalised = normalisedCost(totalCosts)
 normalised_delaycost = normalisedCost(delayCosts)
 normalised_distancecost = normalisedCost(distanceCosts)  
     
-E_delay = globalFairness(delayCosts)
-print('Global fairness is rated ',round(E_delay,3))
+E, geo_mean, ari_mean = globalFairness(totalCosts) #Airbus uses un-normalised scored here...
+#normalised scored give a different value... 
+EN, geo_meanN, ari_meanN = globalFairness(normalised)     
+print('Global fairness is rated ',round(E,3))
+print('Global normalised fairness is rated ',round(EN,3))
 print('(0 is unfair, 1 is fair)')
+print('Total global delay incurred is', sum(delayTimes),' mins / ', round(sum(delayTimes)/60,3), 'hours')
+print('Total global addittional distance travelled is', sum(extraDistances), 'm / ', sum(extraDistances)/1000, 'km')
+
 
 '''
 subplots(1,2)    
@@ -226,25 +257,53 @@ xlabel('Extra meters')
 ylabel('unweighted cost')
 '''
 
+#---------- Look at cost function shape ----------#
 subplots(1,2)    
+suptitle('Unweighted Normalised Cost Functions')
 subplot(1,2,1)
-scatter(delayTimes,normalised_delaycost)
+scatter(delayTimes,normalised_delaycost, color='green')
 xlabel('Mins delayed')
-ylabel('Unweighted normalised cost')
+#ylabel('Unweighted normalised cost')
 subplot(1,2,2)
 scatter(extraDistances,normalised_distancecost, color='green')
 xlabel('Extra meters')
 #ylabel('Unweighted normalised cost')
 
+#---------- Look at distribution of delay and additional distance ----------#
+#+ linear regression
+subplots(1,2)    
+suptitle('Incurred Delay and Additional Distance')
+delayTime_R,r_time = linearRegression(C,delayTimes)
+subplot(1,2,1)
+scatter(C,delayTimes, color='cyan', label= 'Delay Time')
+plot(C,delayTime_R, color='blue', label= f'Linear Reg. R= {r_time}')
+legend( loc='upper left')
+xlabel('User ID #')
+ylabel('delay time (mins)')
+
+subplot(1,2,2)
+delayDistance_R,r_distance = linearRegression(C,extraDistances)
+scatter(C,extraDistances, color='cyan', label='Extra Distance')
+plot(C,delayDistance_R, color='blue', label= f'Linear Reg. R= {r_time}')
+legend( loc='upper left')
+xlabel('User ID #')
+ylabel('additional travel (m)')
 
 
+#---------- Look at normalised costs of delay and extra travel ----------#
+# + geometric and arithmetic mean of total cost function
 fig,ax = subplots()
 ax.scatter(delayTimes,normalised, color="pink", 
         marker="o")
 ax.set_xlabel('Mins delayed (min)')
+ax.plot(delayTimes, [geo_meanN]*len(delayTimes), color='orange', marker='*')
+ax.plot(delayTimes, [ari_meanN]*len(delayTimes), color='yellow', marker='.')
+
 
 ax2=ax.twiny()
 ax2.scatter(extraDistances,normalised, color="red", 
         marker="o")
+#ax2.plot(extraDistances, [geo_meanN]*len(extraDistances), color='red', marker='*')
+#ax2.plot(extraDistances, [ari_meanN]*len(extraDistances), color='red', marker='.')
 ax2.set_xlabel('Extra meters travelled (m)')
 ax.set_ylabel('Normalised percieved cost')
