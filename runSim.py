@@ -32,13 +32,13 @@ Dit_cs = 15          #Delay Intolerable Commercial Survey (mins)                
 #Additional Length Incurred Thresholds (m)
 #INDIFFERENCE
 Lid_r  = juice*(0.05)    #Extra Length Indifference Recreational (meters)
-Lid_ce = juice*(0.1)    #Extra Length Indifference Commercial eCommerce (meters)
+Lid_ce = juice*(0.1)     #Extra Length Indifference Commercial eCommerce (meters)
 Lid_cs = 10              #Extra Length Indifference Commercial Survey (meters)
 
 #INTOLERABLE
 Lit_r  = juice*(0.1)    #Extra Length Indifference Recreational (meters)
 Lit_ce = juice*(0.2)    #Extra Length Indifference Commercial eCommerce (meters)
-Lit_cs = 15              #Extra Length Indifference Commercial Survey (meters)
+Lit_cs = 15             #Extra Length Indifference Commercial Survey (meters)
 
 '--- User Preferences ---'
 '''
@@ -362,14 +362,22 @@ def viewStepRecGraph():
     sc2 = ax[0].scatter(xs, ys, z_rec, label='Recreational', alpha=0.5, s=0.2, color='salmon')
     sc3 = ax[0].scatter(xs, ys, z_ecom, label = 'eCommerce', alpha=0.6, s=0.3, color='orangered')
     ax[0].view_init(10,25)
+    
     ax[0].set_title('Step Functions View 1')
+    ax[0].set_xlabel('Minutes Delayed')
+    ax[0].set_ylabel('Extra Distance Travelled (m)')
+    ax[0].set_zlabel('Penalty')
     ax[0].legend( loc='upper left')
     
     sc4 = ax[1].scatter(xs, ys, z_sur, label='Survey', s=0.1, color='pink')
     sc5 = ax[1].scatter(xs, ys, z_rec, label='Recreational', s=0.2, color='salmon')
     s6 = ax[1].scatter(xs, ys, z_ecom, label = 'eCommerce', s=0.3, color='orangered')
     ax[1].view_init(10,110)
+    
     ax[1].set_title('Step Functions View 2')
+    ax[1].set_xlabel('Minutes Delayed')
+    ax[1].set_ylabel('Extra Distance Travelled (m)')
+    ax[1].set_zlabel('Penalty')
     ax[1].legend( loc='upper left')
 
 
@@ -429,7 +437,7 @@ def viewRegressions():
     xlabel('User ID #')
     ylabel('additional travel (m)')
 'unhash below to see regressions for recreational users'
-#viewRegressions()
+viewRegressions()
 
 
 #------------------------------------------------------
