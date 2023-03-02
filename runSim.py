@@ -316,43 +316,78 @@ with open('data.csv', 'w', encoding='UTF8') as f:
 
 def viewStepRecGraph():
     
-    #3D PLOT
-    fig = figure()
-    ax = fig.add_subplot(projection='3d')
-    title('Recreational User Step Function')
-
+    
+    #make random data points
     x = linspace(0,60,100) #time     (d)
     y = linspace(0,150,100)  #distance (l)
-    z = []
+    
+    #create empty lists
+    xs=[]
+    ys=[]
+    z_rec = []
+    z_ecom = []
+    z_sur = []
+    
+    
+    for i in range(0,len(x)):
+        for j in range(0,len(y)):
+            xs.append(x[i])
+            ys.append(y[j])
+    
 
     Cl=Cd=0.5
-    for i in range(0,len(x)):
+    for i in range(0,len(xs)):
         #(LTid, LTit,DTid, DTit,L,D, Cl, Cd):
-            penalty= stepPenaltyFunction(Lid_r, Lit_r,Did_r, Dit_r,y[i],x[i], Cl, Cd)
-            z.append(penalty)
-
-
+            penalty_rec= stepPenaltyFunction(Lid_r, Lit_r,Did_r, Dit_r,ys[i],xs[i], Cl, Cd)
+            penalty_ecom= stepPenaltyFunction(Lid_ce, Lit_ce,Did_ce, Dit_ce,ys[i],xs[i], Cl, Cd)
+            penalty_sur = stepPenaltyFunction(Lid_cs, Lit_cs,Did_cs, Dit_cs,ys[i],xs[i], Cl, Cd)
+            
+            z_rec.append(penalty_rec)
+            z_ecom.append(penalty_ecom)
+            z_sur.append(penalty_sur)
+            
+    '''
+    ax.scatter(xs, ys, z_sur, label='Survey', alpha=0.4, s=0.1, color='peachpuff')
+    ax.scatter(xs, ys, z_rec, label='Recreational', alpha=0.5, s=0.1, color='salmon')
+    ax.scatter(xs, ys, z_ecom, label = 'eCommerce', alpha=0.6, s=0.1, color='orangered')
+    ax.view_init(10,angle)
     ax.set_xlabel('Time Delayed (mins)')
     ax.set_ylabel('Extra Distance (meters)')
-    ax.set_zlabel('Relative Percieved Penalty (dimensionless)')
+    ax.set_zlabel('Percieved Penalty (dimensionless)')
+    '''    
+    
+    fig, ax = subplots(1,2,figsize=(10,10),subplot_kw=dict(projection='3d'))
+    
+    sc1 = ax[0].scatter(xs, ys, z_sur, label='Survey', alpha=0.9, s=0.1, color='pink')
+    sc2 = ax[0].scatter(xs, ys, z_rec, label='Recreational', alpha=0.5, s=0.2, color='salmon')
+    sc3 = ax[0].scatter(xs, ys, z_ecom, label = 'eCommerce', alpha=0.6, s=0.3, color='orangered')
+    ax[0].view_init(10,25)
+    ax[0].set_title('Step Functions View 1')
+    ax[0].legend( loc='upper left')
+    
+    sc4 = ax[1].scatter(xs, ys, z_sur, label='Survey', s=0.1, color='pink')
+    sc5 = ax[1].scatter(xs, ys, z_rec, label='Recreational', s=0.2, color='salmon')
+    s6 = ax[1].scatter(xs, ys, z_ecom, label = 'eCommerce', s=0.3, color='orangered')
+    ax[1].view_init(10,110)
+    ax[1].set_title('Step Functions View 2')
+    ax[1].legend( loc='upper left')
 
-    #ax.view_init(10,200)
-    ax.scatter(x, y, z)
 
+    '''
     #2D PLOTs
     fig2=figure()
     subplots(1,2) 
     suptitle('Side View Step Functions ')
     subplot(1,2,1)
-    scatter(x, z)
+    scatter(xs, z_rec)
     xlabel('Time Delayed (mins)')
     ylabel('Relative Percieved Penalty')
 
     subplot(1,2,2)
-    scatter(y, z)
-    xlabel('TExtra Distance (meters)')
+    scatter(ys, z_rec)
+    xlabel('Extra Distance (meters)')
     ylabel('Relative Percieved Penalty')
-
+    '''
 
 'unhash below to see the step function shape (example is recreational users)'
 viewStepRecGraph()
@@ -394,7 +429,7 @@ def viewRegressions():
     xlabel('User ID #')
     ylabel('additional travel (m)')
 'unhash below to see regressions for recreational users'
-viewRegressions()
+#viewRegressions()
 
 
 #------------------------------------------------------
@@ -439,7 +474,7 @@ def fairVSequal():
     lines2, labels2 = ax2.get_legend_handles_labels()
     ax2.legend(lines + lines2, labels + labels2, loc='upper center')
 'unhash below to see the equality / fairness graph for recreational users'
-fairVSequal()
+#fairVSequal()
 #-----------------------------------------------------
 print('E_rec, E_ecom, E_sur,  Sat_rec, Sat_ecom, Sat_sur, Fair_rec, Fair_ecom, Fair_sur')
 a = '  '
